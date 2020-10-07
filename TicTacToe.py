@@ -222,6 +222,67 @@ class TicTacToe:
         move = random.choice(max_cols)
         return int(move / 3), int(move % 3)
 
+   # Minimax implementation
+    def minimax_ab(self, turn, depth, alpha, beta):
+        # Recursive function that explores different combinations of moves
+        self.result = self.winner()
+        # If the Game is over output the outcome
+        if self.result != None:
+            if self.result == 'X':
+                return 1
+            elif self.result == 'O':
+                return -1
+            elif self.result == '-':
+                return 0
+        # If the number of exploration reaches a maximum
+        if depth == 0:
+            return 0
+
+        valid_moves = self.get_valid_moves()
+        if turn == 'X':
+            value = -np.Inf
+            for move in valid_moves:
+                x, y = int(move / 3), int(move % 3)
+                self.game_board[x][y] = turn
+                value = max(value, self.minimax_ab(
+                    'O', depth - 1, alpha, beta))
+                alpha = max(alpha, value)
+                self.game_board[x][y] = '-'
+                if alpha >= beta:
+                    break
+            return value
+        else:
+            value = np.Inf
+            for move in valid_moves:
+                x, y = int(move / 3), int(move % 3)
+                self.game_board[x][y] = turn
+                value = min(value, self.minimax_ab(
+                    'X', depth - 1, alpha, beta))
+                beta = min(beta, value)
+                self.game_board[x][y] = '-'
+                if beta <= alpha:
+                    break
+            return value
+
+    def agent_minimax_ab(self, turn):
+        valid_moves = self.get_valid_moves()
+        # Use the heuristic to assign a score to each possible board in the next turn
+        scores = dict(zip(valid_moves, [0 for move in valid_moves]))
+        for move in valid_moves:
+            x, y = int(move / 3), int(move % 3)
+            self.game_board[x][y] = turn
+            if turn == 'X':
+                scores[move] = self.minimax_ab('O', 5, -np.Inf, +np.Inf)
+            else:
+                scores[move] = self.minimax_ab('X', 5, -np.Inf, +np.Inf)
+            self.game_board[x][y] = '-'
+        # Get a list of columns (moves) that maximize the heuristic
+        max_cols = [key for key in scores.keys() if scores[key] ==
+                    max(scores.values())]
+        # Select at random from the maximizing columns
+        move = random.choice(max_cols)
+        return int(move / 3), int(move % 3)
+
     def play(self):
         while True:
             self.draw_board()
@@ -247,6 +308,8 @@ class TicTacToe:
                     x, y = self.agent_n_step(self.player_turn)
                 elif self.agent1 == "minimax":
                     x, y = self.agent_minimax(self.player_turn)
+                elif self.agent1 == "minimax_ab":
+                    x, y = self.agent_minimax_ab(self.player_turn)
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -267,6 +330,8 @@ class TicTacToe:
                     x, y = self.agent_n_step(self.player_turn)
                 elif self.agent2 == "minimax":
                     x, y = self.agent_minimax(self.player_turn)
+                elif self.agent2 == "minimax_ab":
+                    x, y = self.agent_minimax_ab(self.player_turn)
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -305,6 +370,8 @@ class TicTacToe:
                         x, y = self.agent_n_step(self.player_turn)
                     elif self.agent1 == "minimax":
                         x, y = self.agent_minimax(self.player_turn)
+                    elif self.agent1 == "minimax_ab":
+                        x, y = self.agent_minimax_ab(self.player_turn)
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
@@ -325,6 +392,8 @@ class TicTacToe:
                         x, y = self.agent_n_step(self.player_turn)
                     elif self.agent2 == "minimax":
                         x, y = self.agent_minimax(self.player_turn)
+                    elif self.agent2 == "minimax_ab":
+                        x, y = self.agent_minimax_ab(self.player_turn)
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
