@@ -3,7 +3,7 @@ import random
 
 
 class TicTacToe:
-    def __init__(self, player1="random", player2="random", draw=True):
+    def __init__(self, player1="random", player2="random", draw=True, steps=3):
         # Initialise the game board
         self.game_board = self.create_board()
         # Player 1's color
@@ -11,6 +11,8 @@ class TicTacToe:
         # Define how each player will play
         self.agent1 = player1
         self.agent2 = player2
+        # N steps lookahead
+        self.steps = steps
 
     def create_board(self):
         # Initialise the game board
@@ -19,6 +21,7 @@ class TicTacToe:
     def draw_board(self):
         # Print the current board to the screen
         for i in range(0, 3):
+            print('|', end=" ")
             for j in range(0, 3):
                 print('{}|'.format(self.game_board[i][j]), end=" ")
             print()
@@ -42,7 +45,6 @@ class TicTacToe:
         return moves
 
     def winner(self):
-        # Check all row and columns for winning state
         for i in range(0, 3):
             # Vertical winner
             if self.game_board[0][i] != '-':
@@ -113,14 +115,63 @@ class TicTacToe:
         if next_move is not None:
             return int(next_move / 3), int(next_move % 3)
         else:
-            xy = random.choice(moves)
-            return int(xy / 3), int(xy % 3)
+            return self.agent_random()
+
+    def n_step_rec(self, turn, depth):
+        # Recursive function that explores different combinations of moves
+        self.result = self.winner()
+
+        # If the Game is over output the outcome
+        if self.result != None:
+            if self.result == 'X':
+                return 1
+            elif self.result == 'O':
+                return -1
+            elif self.result == '-':
+                return 0
+        # If the number of exploration reaches a maximum
+        if depth == 0:
+            return 0
+        valid_moves = self.get_valid_moves()
+        if turn == 'X':
+            value = 0
+            for move in valid_moves:
+                x, y = int(move / 3), int(move % 3)
+                self.game_board[x][y] = turn
+                value += self.n_step_rec('O', depth - 1)
+                self.game_board[x][y] = '-'
+            return value
+        else:
+            value = 0
+            for move in valid_moves:
+                x, y = int(move / 3), int(move % 3)
+                self.game_board[x][y] = turn
+                value += self.n_step_rec('X', depth - 1)
+                self.game_board[x][y] = '-'
+
+            return value
+
+    def agent_n_step(self, turn):
+        valid_moves = self.get_valid_moves()
+        # Use the heuristic to assign a score to each possible board in the next turn
+        scores = dict(zip(valid_moves, [0 for move in valid_moves]))
+        for move in valid_moves:
+            x, y = int(move / 3), int(move % 3)
+            self.game_board[x][y] = turn
+            scores[move] = self.n_step_rec('O', 3)
+            self.game_board[x][y] = '-'
+        # Get a list of columns (moves) that maximize the heuristic
+        max_cols = [key for key in scores.keys() if scores[key] ==
+                    max(scores.values())]
+        # Select at random from the maximizing columns
+        move = random.choice(max_cols)
+        return int(move / 3), int(move % 3)
 
     def play(self):
         while True:
             self.draw_board()
             self.result = self.winner()
-            # Check if there is an end state
+
             if self.result != None:
                 if self.result == 'X':
                     print('Player 1 won!')
@@ -137,6 +188,8 @@ class TicTacToe:
                     x, y = self.agent_random()
                 elif self.agent1 == "next_winning":
                     x, y = self.agent_next_winning_move()
+                elif self.agent1 == "n_step":
+                    x, y = self.agent_n_step(self.player_turn)
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -153,6 +206,8 @@ class TicTacToe:
                     x, y = self.agent_random()
                 elif self.agent2 == "next_winning":
                     x, y = self.agent_next_winning_move()
+                elif self.agent2 == "n_step":
+                    x, y = self.agent_n_step(self.player_turn)
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -187,6 +242,8 @@ class TicTacToe:
                         x, y = self.agent_random()
                     elif self.agent1 == "next_winning":
                         x, y = self.agent_next_winning_move()
+                    elif self.agent1 == "n_step":
+                        x, y = self.agent_n_step(self.player_turn)
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
@@ -203,6 +260,8 @@ class TicTacToe:
                         x, y = self.agent_random()
                     elif self.agent2 == "next_winning":
                         x, y = self.agent_next_winning_move()
+                    elif self.agent2 == "n_step":
+                        x, y = self.agent_n_step(self.player_turn)
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
