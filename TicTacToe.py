@@ -158,7 +158,7 @@ class TicTacToe:
         for move in valid_moves:
             x, y = int(move / 3), int(move % 3)
             self.game_board[x][y] = turn
-            scores[move] = self.n_step_rec('O', 3)
+            scores[move] = self.n_step_rec('O', 5)
             self.game_board[x][y] = '-'
         # Get a list of columns (moves) that maximize the heuristic
         max_cols = [key for key in scores.keys() if scores[key] ==
@@ -211,9 +211,9 @@ class TicTacToe:
             x, y = int(move / 3), int(move % 3)
             self.game_board[x][y] = turn
             if turn == 'X':
-                scores[move] = self.minimax('O', 3)
+                scores[move] = self.minimax('O', 5)
             else:
-                scores[move] = self.minimax('X', 3)
+                scores[move] = self.minimax('X', 5)
             self.game_board[x][y] = '-'
         # Get a list of columns (moves) that maximize the heuristic
         max_cols = [key for key in scores.keys() if scores[key] ==
