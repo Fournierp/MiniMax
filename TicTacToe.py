@@ -74,8 +74,49 @@ class TicTacToe:
         xy = random.choice(self.get_valid_moves())
         return int(xy / 3), int(xy % 3)
 
-    def play(self):
+    def agent_next_winning_move(self):
+        # Agent that plays the next move that wins the board
+        board_copy = self.game_board.copy()
+        moves = self.get_valid_moves()
+        next_move = None
+        for move in moves:
+            x, y = int(move / 3), int(move % 3)
+            board_copy[x][y] = self.player_turn
+            for i in range(0, 3):
+                # Vertical winner
+                if board_copy[0][i] != '-':
+                    if self.game_board[0][i] == board_copy[1][i] == board_copy[2][i]:
+                        next_move = move
+                        break
+                # Horizontal winner
+                if board_copy[i][0] != '-':
+                    if board_copy[i][0] == board_copy[i][1] == board_copy[i][2]:
+                        next_move = move
+                        break
+            # Diagonal winner
+            if board_copy[1][1] != '-':
+                if board_copy[0][0] == board_copy[1][1] == board_copy[2][2]:
+                    next_move = move
+                    break
+                elif board_copy[2][0] == board_copy[1][1] == board_copy[0][2]:
+                    next_move = move
+                    break
+            # Tie
+            for i in range(3):
+                for j in range(3):
+                    # If there is at least one tile not filed
+                    if board_copy[i][j] == '-':
+                        next_move = None
 
+            next_move = None
+        #
+        if next_move is not None:
+            return int(next_move / 3), int(next_move % 3)
+        else:
+            xy = random.choice(moves)
+            return int(xy / 3), int(xy % 3)
+
+    def play(self):
         while True:
             self.draw_board()
             self.result = self.winner()
@@ -94,6 +135,8 @@ class TicTacToe:
                 # Get Player 1's decison
                 if self.agent1 == "random":
                     x, y = self.agent_random()
+                elif self.agent1 == "next_winning":
+                    x, y = self.agent_next_winning_move()
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -108,6 +151,8 @@ class TicTacToe:
                 # Get Player 2's decison
                 if self.agent2 == "random":
                     x, y = self.agent_random()
+                elif self.agent2 == "next_winning":
+                    x, y = self.agent_next_winning_move()
 
                 # Put it on the board
                 if self.is_valid_move(x, y):
@@ -140,6 +185,8 @@ class TicTacToe:
                     # Get Player 1's decison
                     if self.agent1 == "random":
                         x, y = self.agent_random()
+                    elif self.agent1 == "next_winning":
+                        x, y = self.agent_next_winning_move()
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
@@ -154,6 +201,8 @@ class TicTacToe:
                     # Get Player 2's decison
                     if self.agent2 == "random":
                         x, y = self.agent_random()
+                    elif self.agent2 == "next_winning":
+                        x, y = self.agent_next_winning_move()
 
                     # Put it on the board
                     if self.is_valid_move(x, y):
@@ -163,4 +212,5 @@ class TicTacToe:
                         print('The move is not valid!', x, y)
                         return
 
+        print('Player 1: {} vs. Player 2: {}'.format(self.agent1, self.agent2))
         print('Player 1 W: {}, L: {}, T: {}'.format(w, l, t), end=" ")
